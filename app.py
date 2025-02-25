@@ -1,27 +1,13 @@
-from flask import Flask, jsonify, request
+import os
+
+from flask import Flask
 
 app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Flask server is running!"
-
-@app.route("/get-recipe", methods=["POST"])
-def get_recipe():
-    data = request.json  # Expecting a JSON body with ingredients
-    ingredients = data.get("ingredients", [])
-
-    if not ingredients:
-        return jsonify({"error": "No ingredients provided"}), 400
-
-    # Dummy recipe logic (Replace this with real recipe fetching logic)
-    recipe = {
-        "title": "Random Dish",
-        "ingredients": ingredients,
-        "instructions": "Mix everything and cook!"
-    }
-
-    return jsonify(recipe)
+    return "Flask server is running on Railway!"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Get Railway-assigned port or default to 5000
+    app.run(host="0.0.0.0", port=port, debug=True)
