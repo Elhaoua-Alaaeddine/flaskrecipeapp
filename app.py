@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # Spoonacular API Key
 SPOONACULAR_API_KEY = os.getenv("SPOONACULAR_API_KEY")
-
+print("Loaded API Key:", SPOONACULAR_API_KEY)
 
 @app.route("/")
 def home():
