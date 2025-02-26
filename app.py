@@ -1,33 +1,35 @@
 import os
 
+import requests
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-# Sample recipe database
-RECIPES = [
-    {"name": "Pasta", "ingredients": ["pasta", "tomato", "cheese"]},
-    {"name": "Salad", "ingredients": ["lettuce", "tomato", "cucumber"]},
-    {"name": "Omelette", "ingredients": ["egg", "cheese", "butter"]},
-]
+# Spoonacular API Key
+SPOONACULAR_API_KEY = "0c3e10f27f214d4885091db6c42ad96f"
 
 @app.route("/")
 def home():
-    return "Flask Recipe API is live!"
+    return "Flask Recipe API is live"
 
 @app.route("/recipes", methods=["POST"])
 def get_recipes():
     data = request.json
-    ingredients = set(data.get("ingredients", []))  # Convert to set for easy matching
+    ingredients = ",".join(data.get("ingredients", []))  # Convert list to comma-separated string
 
-    # Find recipes that use at least 1 ingredient
-    matched_recipes = [
-        recipe for recipe in RECIPES
-        if ingredients.intersection(recipe["ingredients"])
-    ]
+    if not ingredients:
+        return jsonify({"error": "No ingredients provided"}), 400
 
-    return jsonify({"recipes": matched_recipes})
+    url = f"https://api.spoonacular.com/recipes/findByIngredients?ingredients={ingredients}&number=5&apiKey={SPOONACULAR_API_KEY}"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        recipes = response.json()
+        return jsonify(recipes)
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(debug=True)
