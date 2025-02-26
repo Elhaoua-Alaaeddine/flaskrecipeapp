@@ -6,16 +6,19 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 # Spoonacular API Key
-SPOONACULAR_API_KEY = "0c3e10f27f214d4885091db6c42ad96f"
+SPOONACULAR_API_KEY = os.getenv("SPOONACULAR_API_KEY")
+
 
 @app.route("/")
 def home():
     return "Flask Recipe API is live"
 
+
 @app.route("/recipes", methods=["POST"])
 def get_recipes():
     data = request.json
-    ingredients = ",".join(data.get("ingredients", []))  # Convert list to comma-separated string
+    # Convert list to comma-separated string
+    ingredients = ",".join(data.get("ingredients", []))
 
     if not ingredients:
         return jsonify({"error": "No ingredients provided"}), 400
@@ -28,8 +31,9 @@ def get_recipes():
         recipes = response.json()
         return jsonify(recipes)
 
+
     except requests.exceptions.RequestException as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Failed to fetch recipes", "details": str(e)}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
