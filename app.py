@@ -4,6 +4,13 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
+# Sample recipe database
+RECIPES = [
+    {"name": "Pasta", "ingredients": ["pasta", "tomato", "cheese"]},
+    {"name": "Salad", "ingredients": ["lettuce", "tomato", "cucumber"]},
+    {"name": "Omelette", "ingredients": ["egg", "cheese", "butter"]},
+]
+
 @app.route("/")
 def home():
     return "Flask Recipe API is live!"
@@ -11,18 +18,15 @@ def home():
 @app.route("/recipes", methods=["POST"])
 def get_recipes():
     data = request.json
-    ingredients = data.get("ingredients", [])
+    ingredients = set(data.get("ingredients", []))  # Convert to set for easy matching
 
-    # Placeholder response (we'll improve this later)
-    recipes = [
-        {"name": "Pasta", "ingredients": ["pasta", "tomato", "cheese"]},
-        {"name": "Salad", "ingredients": ["lettuce", "tomato", "cucumber"]},
+    # Find recipes that use at least 1 ingredient
+    matched_recipes = [
+        recipe for recipe in RECIPES
+        if ingredients.intersection(recipe["ingredients"])
     ]
-    
-    # Filter recipes that match at least one ingredient
-    matching_recipes = [r for r in recipes if any(i in r["ingredients"] for i in ingredients)]
 
-    return jsonify({"recipes": matching_recipes})
+    return jsonify({"recipes": matched_recipes})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
